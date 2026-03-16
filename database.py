@@ -1,0 +1,55 @@
+import mysql.connector
+from mysql.connector import Error
+
+class JobTrackerDB:
+    def __init__(self):
+        self.config = {
+            'host': 'localhost',
+            'user': 'root',
+            'password': 'YOUR_PASSWORD',
+            'database': 'job_tracker_project'
+        }
+        self.connection = None
+    
+    def connect(self):
+        try:
+            self.connection = mysql.connector.connect(**self.config)
+            return True
+        except Error as e:
+            print(f'Connection error: {e}')
+            return False
+    
+    def disconnect(self):
+        if self.connection and self.connection.is_connected():
+            self.connection.close()
+    
+    def get_all_companies(self):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM companies')
+        return cursor.fetchall()
+    
+    def insert_company(self, company_name, industry, website, city, state, notes):
+        cursor = self.connection.cursor(dictionary=True)
+        insert_query = '''
+            INSERT INTO companies (company_name, industry, website, city, state, notes)
+            VALUES(%s, %s, %s, %s, %s, %s)
+        '''
+        values = (company_name, industry, website, city, state, notes)
+        cursor.execute(insert_query, values)
+        self.connection.commit()
+        print(f'Company added successfully!')
+        print(f'New company ID: {cursor.lastrowid}')
+
+    def get_jobs_by_salary(self, min_salary):
+        cursor = self.connection.cursor(dictionary=True)
+        query = 'SELECT * FROM jobs WHERE salary_min >= %s'
+        cursor.execute(query, (min_salary,))
+        return cursor.fetchall()
+    
+    def add_application(self, job_id, status='Applied'):
+        cursor = self.connection.cursor()
+        query = '''INSERT INTO applications (job_id, application_date, status)
+                   VALUES (%s, CURDATE(), %s)'''
+        cursor.execute(query, (job_id, status))
+        self.connection.commit()
+        return cursor.lastrowid
