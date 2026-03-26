@@ -40,6 +40,28 @@ class JobTrackerDB:
         print(f'Company added successfully!')
         print(f'New company ID: {cursor.lastrowid}')
 
+    def edit_company(self, company_name, industry, website, city, state, notes, company_id):
+        cursor = self.connection.cursor(dictionary=True)
+        edit_query = '''
+            UPDATE companies 
+            SET company_name = %s, industry = %s, website = %s, city = %s, state = %s, notes = %s
+            WHERE company_id = %s
+        '''
+        values = (company_name, industry, website, city, state, notes, company_id)
+        cursor.execute(edit_query, values)
+        self.connection.commit()
+        print(f'Company edited successfully!')
+    
+    def delete_company(self, company_id):
+        cursor = self.connection.cursor(dictionary=True)
+        delete_query = '''
+            DELETE FROM companies 
+            WHERE company_id = %s
+        '''
+        cursor.execute(delete_query, (company_id,))
+        self.connection.commit()
+        print(f'Company deleted successfully!')
+
     def get_jobs_by_salary(self, min_salary):
         cursor = self.connection.cursor(dictionary=True)
         query = 'SELECT * FROM jobs WHERE salary_min >= %s'

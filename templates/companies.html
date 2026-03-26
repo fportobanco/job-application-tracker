@@ -2,40 +2,104 @@
 {% block content %}
 <h2> Companies </h2>
 
-<form method="POST" class="card p-4">
+<!--Add and edit company form-->
+<form method="POST" class="card p-4"
+    action="{% if editing_company %}/companies/edit/{{ editing_company.company_id }}{% else %}/companies{% endif %}">
     <div class="mb-3">
         <label class="form-label">Company Name</label>
-        <input type="text" name="company_name" class="form-control" required>
+        <input type="text" name="company_name" class="form-control" required
+        value="{{ editing_company.company_name if editing_company }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Industry</label>
-        <input type="text" name="industry" class="form-control">
+        <input type="text" name="industry" class="form-control"
+        value="{{ editing_company.industry if editing_company }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Website</label>
-        <input type="text" name="website" class="form-control">
+        <input type="text" name="website" class="form-control"
+        value="{{ editing_company.website if editing_company }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">City</label>
-        <input type="text" name="city" class="form-control">
+        <input type="text" name="city" class="form-control"
+        value="{{ editing_company.city if editing_company }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">State</label>
-        <input type="text" name="state" class="form-control">
+        <input type="text" name="state" class="form-control"
+        value="{{ editing_company.state if editing_company }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Notes</label>
-        <textarea name="notes" class="form-control"></textarea>
+        <textarea name="notes" class="form-control">{{ editing_company.notes if editing_company }}</textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Add Company</button>
-    {% if message %}
-    <p>{{ message }}</p>
+
+    <button type="submit" class="btn btn-primary">
+    {% if editing_company %}
+    Save Edit
+    {% else %}
+    Add Company
     {% endif %}
+    </button>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 </form>
 
+{% if deleting_company %}
+<div class="alert alert-warning">
+    Are you sure you want to delete <strong>{{ deleting_company.company_name }}</strong>?
+    <form method="POST" action="/companies/delete/{{ deleting_company.company_id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Yes, Delete</button>
+    </form>
+    <a href="/companies" class="btn btn-sm btn-secondary">Cancel</a>
+</div>
+{% endif %}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Industry</th>
+            <th>Website</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for company in companies %}
+        <tr>
+            <td>{{ company.company_id }}</td>
+            <td>{{ company.company_name }}</td>
+            <td>{{ company.industry }}</td>
+            <td>{{ company.website }}</td>
+            <td>{{ company.city }}</td>
+            <td>{{ company.state }}</td>
+            <td>{{ company.notes }}</td>
+            <td>
+                <!-- Edit and Delete buttons -->
+                <a href="/companies/edit/{{ company.company_id }}" class="btn btn-sm btn-warning">Edit</a>
+                
+                <form method="GET" action="/companies/delete/{{ company.company_id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
