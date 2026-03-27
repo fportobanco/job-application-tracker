@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<h2> Applications </h2>
+
+<!--Add and edit application form-->
+<form method="POST" class="card p-4"
+    action="{% if editing_application %}/applications/edit/{{ editing_application.application_id }}{% else %}/applications{% endif %}">
+    <div class="mb-3">
+        <label class="form-label">Job ID</label>
+        <input type="text" name="job_id" class="form-control" required
+        value="{{ editing_application.job_id if editing_application }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Application Date</label>
+        <input type="date" name="application_date" class="form-control" required
+        value="{{ editing_application.application_date if editing_application }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+            <option value="Applied">Applied</option>
+            <option value="Screening">Screening</option>
+            <option value="Interview">Interview</option>
+            <option value="Offer">Offer</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Withdrawn">Withdrawn</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Resume Version</label>
+        <input type="text" name="resume_version" class="form-control"
+        value="{{ editing_application.resume_version if editing_application }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Cover Letter Sent?</label>
+        <input type="checkbox" name="cover_letter_sent"
+        {% if editing_application and editing_application.cover_letter_sent %}checked{% endif %}>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Interview Data</label>
+        <textarea name="interview_data" class="form-control">{{ editing_application.interview_data if editing_application }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+    {% if editing_application %}
+    Save Edit
+    {% else %}
+    Add Application
+    {% endif %}
+    </button>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</form>
+
+{% if deleting_application %}
+<div class="alert alert-warning">
+    Are you sure you want to delete application number <strong>{{ deleting_application.application_id }}</strong>?
+    <form method="POST" action="/applications/delete/{{ deleting_application.application_id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Yes, Delete</button>
+    </form>
+    <a href="/applications" class="btn btn-sm btn-secondary">Cancel</a>
+</div>
+{% endif %}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Application ID</th>
+            <th>Application Job ID</th>
+            <th>Application Date</th>
+            <th>Status</th>
+            <th>Resume Version</th>
+            <th>Cover Letter Sent</th>
+            <th>Interview Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for application in applications %}
+        <tr>
+            <td>{{ application.application_id }}</td>
+            <td>{{ application.job_id }}</td>
+            <td>{{ application.application_date }}</td>
+            <td>{{ application.status }}</td>
+            <td>{{ application.resume_version }}</td>
+            <td>{{ application.cover_letter_sent }}</td>
+            <td>{{ application.interview_data }}</td>
+            <td>
+                <!-- Edit and Delete buttons -->
+                <a href="/applications/edit/{{ application.application_id }}" class="btn btn-sm btn-warning">Edit</a>
+                
+                <form method="GET" action="/applications/delete/{{ application.application_id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

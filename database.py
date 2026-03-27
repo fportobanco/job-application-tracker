@@ -68,10 +68,46 @@ class JobTrackerDB:
         cursor.execute(query, (min_salary,))
         return cursor.fetchall()
     
-    def add_application(self, job_id, status='Applied'):
-        cursor = self.connection.cursor()
-        query = '''INSERT INTO applications (job_id, application_date, status)
-                   VALUES (%s, CURDATE(), %s)'''
-        cursor.execute(query, (job_id, status))
+    def get_all_applications(self):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM applications')
+        return cursor.fetchall()
+
+    def get_all_jobs(self):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM jobs')
+        return cursor.fetchall()
+
+    def insert_application(self, application_date, status, resume_version, cover_letter_sent, interview_data, job_id):
+        cursor = self.connection.cursor(dictionary=True)
+        insert_query = '''
+            INSERT INTO applications (application_date, status, resume_version, cover_letter_sent, interview_data, job_id)
+            VALUES(%s, %s, %s, %s, %s, %s)
+        '''
+        values = (application_date, status, resume_version, cover_letter_sent, interview_data, job_id)
+        cursor.execute(insert_query, values)
         self.connection.commit()
-        return cursor.lastrowid
+        print(f'Application added successfully!')
+        print(f'New application ID: {cursor.lastrowid}')    
+    
+    def edit_application(self, application_date, status, resume_version, cover_letter_sent, interview_data, application_id):
+        cursor = self.connection.cursor(dictionary=True)
+        edit_query = '''
+            UPDATE applications 
+            SET application_date = %s, status = %s, resume_version = %s, cover_letter_sent = %s, interview_data = %s
+            WHERE application_id = %s
+        '''
+        values = (application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
+        cursor.execute(edit_query, values)
+        self.connection.commit()
+        print(f'Application edited successfully!')
+
+    def delete_application(self, application_id):
+        cursor = self.connection.cursor(dictionary=True)
+        delete_query = '''
+            DELETE FROM applications 
+            WHERE application_id = %s
+        '''
+        cursor.execute(delete_query, (application_id,))
+        self.connection.commit()
+        print(f'Application deleted successfully!')
