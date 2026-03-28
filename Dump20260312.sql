@@ -129,6 +129,7 @@ CREATE TABLE `jobs` (
   `company_id` int NOT NULL,
   `job_title` varchar(100) NOT NULL,
   `salary_min` int DEFAULT NULL,
+  `salary_max` int DEFAULT NULL,
   `job_type` enum('Full-Time','Part-Time','Contract','Internship') DEFAULT NULL,
   `job_url` varchar(300) DEFAULT NULL,
   `date_posted` date DEFAULT NULL,
@@ -147,7 +148,7 @@ CREATE TABLE `jobs` (
 
 LOCK TABLES `jobs` WRITE;
 /*!40000 ALTER TABLE `jobs` DISABLE KEYS */;
-INSERT INTO `jobs` VALUES (1,1,'Software Developer',70000,'Full-Time',NULL,'2025-01-15',NULL),(2,1,'Database Administrator',75000,'Full-Time',NULL,'2025-01-10',NULL),(3,2,'Data Analyst',65000,'Full-Time',NULL,'2025-01-12',NULL),(4,3,'Cloud Engineer',80000,'Full-Time',NULL,'2025-01-08',NULL),(5,4,'Junior Developer',55000,'Full-Time',NULL,'2025-01-14',NULL),(6,4,'Senior Developer',95000,'Full-Time',NULL,'2025-01-14',NULL),(7,5,'ML Engineer',90000,'Full-Time',NULL,'2025-01-11',NULL),(8,1,'QA Engineer',60000,'Full-Time',NULL,'2025-01-05',NULL),(9,2,'Business Analyst',65000,'Full-Time',NULL,'2025-01-06',NULL),(10,2,'Data Scientist',85000,'Full-Time',NULL,'2025-01-07',NULL),(11,3,'DevOps Engineer',80000,'Full-Time',NULL,'2025-01-08',NULL),(12,3,'Security Analyst',75000,'Full-Time',NULL,'2025-01-09',NULL),(13,4,'UI/UX Designer',60000,'Full-Time',NULL,'2025-01-10',NULL),(14,5,'Product Manager',90000,'Full-Time',NULL,'2025-01-11',NULL),(15,1,'Technical Writer',55000,'Contract',NULL,'2025-01-12',NULL),(16,2,'Intern - Data',30000,'Internship',NULL,'2025-01-13',NULL),(17,4,'Intern - Development',32000,'Internship',NULL,'2025-01-14',NULL),(18,7,'Software Architect',120000,'Full-Time',NULL,NULL,NULL);
+INSERT INTO `jobs` VALUES (1,1,'Software Developer',70000,90000,'Full-Time',NULL,'2025-01-15',NULL),(2,1,'Database Administrator',75000,95000,'Full-Time',NULL,'2025-01-10',NULL),(3,2,'Data Analyst',65000,85000,'Full-Time',NULL,'2025-01-12',NULL),(4,3,'Cloud Engineer',80000,100000,'Full-Time',NULL,'2025-01-08',NULL),(5,4,'Junior Developer',55000,70000,'Full-Time',NULL,'2025-01-14',NULL),(6,4,'Senior Developer',95000,120000,'Full-Time',NULL,'2025-01-14',NULL),(7,5,'ML Engineer',90000,115000,'Full-Time',NULL,'2025-01-11',NULL),(8,1,'QA Engineer',60000,80000,'Full-Time',NULL,'2025-01-05',NULL),(9,2,'Business Analyst',65000,85000,'Full-Time',NULL,'2025-01-06',NULL),(10,2,'Data Scientist',85000,110000,'Full-Time',NULL,'2025-01-07',NULL),(11,3,'DevOps Engineer',80000,105000,'Full-Time',NULL,'2025-01-08',NULL),(12,3,'Security Analyst',75000,95000,'Full-Time',NULL,'2025-01-09',NULL),(13,4,'UI/UX Designer',60000,80000,'Full-Time',NULL,'2025-01-10',NULL),(14,5,'Product Manager',90000,120000,'Full-Time',NULL,'2025-01-11',NULL),(15,1,'Technical Writer',55000,75000,'Contract',NULL,'2025-01-12',NULL),(16,2,'Intern - Data',30000,40000,'Internship',NULL,'2025-01-13',NULL),(17,4,'Intern - Development',32000,42000,'Internship',NULL,'2025-01-14',NULL),(18,7,'Software Architect',120000,150000,'Full-Time',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `jobs` ENABLE KEYS */;
 UNLOCK TABLES;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;

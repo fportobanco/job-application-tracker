@@ -111,3 +111,37 @@ class JobTrackerDB:
         cursor.execute(delete_query, (application_id,))
         self.connection.commit()
         print(f'Application deleted successfully!')
+
+    def insert_job(self, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, company_id):
+        cursor = self.connection.cursor(dictionary=True)
+        insert_query = '''
+            INSERT INTO jobs (date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, company_id)
+            VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
+        '''
+        values = (date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, company_id)
+        cursor.execute(insert_query, values)
+        self.connection.commit()
+        print(f'Job added successfully!')
+        print(f'New job ID: {cursor.lastrowid}')    
+    
+    def edit_job(self, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id):
+        cursor = self.connection.cursor(dictionary=True)
+        edit_query = '''
+            UPDATE jobs 
+            SET date_posted = %s, job_title = %s, job_type = %s, salary_min = %s, salary_max = %s, job_url = %s, requirements = %s
+            WHERE job_id = %s
+        '''
+        values = (date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
+        cursor.execute(edit_query, values)
+        self.connection.commit()
+        print(f'Job edited successfully!')
+
+    def delete_job(self, job_id):
+        cursor = self.connection.cursor(dictionary=True)
+        delete_query = '''
+            DELETE FROM jobs 
+            WHERE job_id = %s
+        '''
+        cursor.execute(delete_query, (job_id,))
+        self.connection.commit()
+        print(f'Job deleted successfully!')

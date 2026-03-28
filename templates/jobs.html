@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+<h2> Jobs </h2>
+
+<!--Add and edit job form-->
+<form method="POST" class="card p-4"
+    action="{% if editing_job %}/jobs/edit/{{ editing_job.job_id }}{% else %}/jobs{% endif %}">
+    <div class="mb-3">
+        <label class="form-label">Company ID</label>
+        <input type="text" name="company_id" class="form-control" required
+        value="{{ editing_job.company_id if editing_job }}">
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Job Title</label>
+        <input type="text" name="job_title" class="form-control" required
+        value="{{ editing_job.job_title if editing_job }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Status</label>
+        <select name="job_type" class="form-control">
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Salary Min</label>
+        <input type="text" name="salary_min" class="form-control"
+        value="{{ editing_job.salary_min if editing_job }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Salary Max</label>
+        <input type="text" name="salary_max" class="form-control"
+        value="{{ editing_job.salary_max if editing_job }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Job URL</label>
+        <input type="text" name="job_url" class="form-control"
+        value="{{ editing_job.job_url if editing_job }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Date Posted</label>
+        <input type="date" name="date_posted" class="form-control" required
+        value="{{ editing_job.date_posted if editing_job }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Requirements</label>
+        <textarea name="requirements" class="form-control">{{ editing_job.requirements if editing_job }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+    {% if editing_job %}
+    Save Edit
+    {% else %}
+    Add Job
+    {% endif %}
+    </button>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</form>
+
+{% if deleting_job %}
+<div class="alert alert-warning">
+    Are you sure you want to delete job number <strong>{{ deleting_job.job_id }}</strong>?
+    <form method="POST" action="/jobs/delete/{{ deleting_job.job_id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Yes, Delete</button>
+    </form>
+    <a href="/jobs" class="btn btn-sm btn-secondary">Cancel</a>
+</div>
+{% endif %}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Job ID</th>
+            <th>Company ID</th>
+            <th>Job Title</th>
+            <th>Job Type</th>
+            <th>Salary Min</th>
+            <th>Salary Max</th>
+            <th>Job URL</th>
+            <th>Date Posted</th>
+            <th>Requirements</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr>
+            <td>{{ job.job_id }}</td>
+            <td>{{ job.company_id }}</td>
+            <td>{{ job.job_title }}</td>
+            <td>{{ job.job_type }}</td>
+            <td>{{ job.salary_min }}</td>
+            <td>{{ job.salary_max }}</td>
+            <td>{{ job.job_url }}</td>
+            <td>{{ job.date_posted }}</td>
+            <td>{{ job.requirements }}</td>
+            <td>
+                <!-- Edit and Delete buttons -->
+                <a href="/jobs/edit/{{ job.job_id }}" class="btn btn-sm btn-warning">Edit</a>
+                
+                <form method="GET" action="/jobs/delete/{{ job.job_id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

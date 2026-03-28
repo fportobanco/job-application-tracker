@@ -171,7 +171,7 @@ def edit_application(application_id):
             interview_data = json.loads(request.form['interview_data'])
             interview_data = json.dumps(interview_data)
         except json.JSONDecodeError:
-            flash("Interview Data is not JSON.", "danger")
+            flash("Interview Data is not JSON.")
             return redirect('/applications')
 
         db.edit_application(application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
@@ -227,6 +227,122 @@ def delete_application(application_id):
         'applications.html',
         applications=applications,
         deleting_application=deleting_application,
+        message=message
+    )
+
+@app.route('/jobs', methods=['GET','POST'])
+def jobs():
+    message = ""
+    db = JobTrackerDB()
+    db.connect()
+
+    if request.method == 'POST':
+        date_posted = request.form['date_posted']
+        job_title = request.form['job_title']
+        job_type = request.form['job_type']
+        salary_min = request.form['salary_min']
+        salary_max = request.form['salary_max']
+        job_url = request.form['job_url']
+        requirements = request.form['requirements']
+        company_id = request.form['company_id']
+
+        try:
+            requirements = json.loads(request.form['requirements'])
+            requirements = json.dumps(requirements)
+        except json.JSONDecodeError:
+            flash("Requirements data is not JSON.")
+            return redirect('/jobs')
+
+        try:
+            db.insert_job(date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, company_id)
+            message = "Job successfully added to database."
+            #To fix resubmission problem
+            flash("Job added successfully!")
+            return redirect('/jobs')
+        except:
+            message = "Unable to add job to database."
+
+    jobs = db.get_all_jobs()
+    companies = db.get_all_companies()
+    db.disconnect()
+
+    return render_template('jobs.html', jobs=jobs, companies=companies, message=message)
+
+@app.route('/jobs/edit/<int:job_id>', methods=['GET','POST'])
+def edit_job(job_id):
+    message = ""
+    db = JobTrackerDB()
+    db.connect()
+
+    if request.method == 'POST':
+        date_posted = request.form['date_posted']
+        job_title = request.form['job_title']
+        job_type = request.form['job_type']
+        salary_min = request.form['salary_min']
+        salary_max = request.form['salary_max']
+        job_url = request.form['job_url']
+        requirements = request.form['requirements']
+
+        try:
+            requirements = json.loads(request.form['requirements'])
+            requirements = json.dumps(requirements)
+        except json.JSONDecodeError:
+            flash("Requirements Data is not JSON.")
+            return redirect('/jobs')
+
+        db.edit_job(date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
+        db.disconnect()
+
+        flash("Job edited successfully!")
+        return redirect('/applications')
+    
+    cursor=db.connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM jobs WHERE job_id = %s", (job_id,))
+    job = cursor.fetchone()
+    jobs = db.get_all_jobs()
+    companies = db.get_all_companies()
+
+    db.disconnect()
+
+    return render_template(
+        'jobs.html',
+        jobs=jobs,
+        companies=companies,
+        editing_job=job
+    )
+
+@app.route('/jobs/delete/<int:job_id>', methods=['GET','POST'])
+def delete_job(job_id):
+    db = JobTrackerDB()
+    db.connect()
+    message = ""
+
+    try:
+        if request.method == 'POST':
+            db.delete_job(job_id)
+            flash("Job deleted successfully!")
+            return redirect('/jobs')
+
+        jobs = db.get_all_jobs()
+
+        deleting_job = None
+        if request.method == 'GET':
+            cursor = db.connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM jobs WHERE job_id = %s", (job_id,))
+            deleting_job = cursor.fetchone()
+
+    except Exception as e:
+        message = f"Error: {e}"
+        jobs = []
+        deleting_job = None
+
+    finally:
+        db.disconnect()
+
+    return render_template(
+        'jobs.html',
+        jobs=jobs,
+        deleting_job=deleting_job,
         message=message
     )
 if __name__ == '__main__':
