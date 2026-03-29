@@ -77,6 +77,11 @@ class JobTrackerDB:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute('SELECT * FROM jobs')
         return cursor.fetchall()
+    
+    def get_all_contacts(self):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM contacts')
+        return cursor.fetchall()
 
     def insert_application(self, application_date, status, resume_version, cover_letter_sent, interview_data, job_id):
         cursor = self.connection.cursor(dictionary=True)
@@ -145,3 +150,37 @@ class JobTrackerDB:
         cursor.execute(delete_query, (job_id,))
         self.connection.commit()
         print(f'Job deleted successfully!')
+    
+    def insert_contact(self, contact_name, title, email, phone, linkedin_url, notes, company_id):
+        cursor = self.connection.cursor(dictionary=True)
+        insert_query = '''
+            INSERT INTO contacts (contact_name, title, email, phone, linkedin_url, notes, company_id)
+            VALUES(%s, %s, %s, %s, %s, %s, %s)
+        '''
+        values = (contact_name, title, email, phone, linkedin_url, notes, company_id)
+        cursor.execute(insert_query, values)
+        self.connection.commit()
+        print(f'Contact added successfully!')
+        print(f'New contact ID: {cursor.lastrowid}') 
+
+    def edit_contact(self, contact_name, title, email, phone, linkedin_url, notes, contact_id):
+        cursor = self.connection.cursor(dictionary=True)
+        edit_query = '''
+            UPDATE contacts 
+            SET contact_name = %s, title = %s, email = %s, phone = %s, linkedin_url = %s, notes = %s
+            WHERE contact_id = %s
+        '''
+        values = (contact_name, title, email, phone, linkedin_url, notes, contact_id)
+        cursor.execute(edit_query, values)
+        self.connection.commit()
+        print(f'Contact edited successfully!')
+
+    def delete_contact(self, contact_id):
+        cursor = self.connection.cursor(dictionary=True)
+        delete_query = '''
+            DELETE FROM contacts 
+            WHERE contact_id = %s
+        '''
+        cursor.execute(delete_query, (contact_id,))
+        self.connection.commit()
+        print(f'Contact deleted successfully!')

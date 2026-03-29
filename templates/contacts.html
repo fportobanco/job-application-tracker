@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<h2> Contacts </h2>
+
+<!--Add and edit contacts form-->
+<form method="POST" class="card p-4"
+    action="{% if editing_contact %}/contacts/edit/{{ editing_contact.contact_id }}{% else %}/contacts{% endif %}">
+    <label class="form-label">Company ID</label>
+        <select name="company_id">
+        {% for company in companies %}
+            <option value="{{company.company_id}}">
+                {{company.company_id}}
+            </option>
+        {% endfor %}
+        </select>
+
+    <div class="mb-3">
+        <label class="form-label">Contact Name</label>
+        <input type="text" name="contact_name" class="form-control" required
+        value="{{ editing_contact.contact_name if editing_contact }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" name="title" class="form-control" required
+        value="{{ editing_contact.title if editing_contact }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="text" name="email" class="form-control" required
+        value="{{ editing_contact.email if editing_contact }}">
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input type="text" name="phone" class="form-control" required
+        value="{{ editing_contact.phone if editing_contact }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">LinkedIn URL</label>
+        <input type="text" name="linkedin_url" class="form-control" required
+        value="{{ editing_contact.linkedin_url if editing_contact }}">
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Notes</label>
+        <textarea name="notes" class="form-control">{{ editing_contact.notes if editing_contact }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+    {% if editing_contact %}
+    Save Edit
+    {% else %}
+    Add Contact
+    {% endif %}
+    </button>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</form>
+
+{% if deleting_contact %}
+<div class="alert alert-warning">
+    Are you sure you want to delete contact number <strong>{{ deleting_contact.contact_id }}</strong>?
+    <form method="POST" action="/contacts/delete/{{ deleting_contact.contact_id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Yes, Delete</button>
+    </form>
+    <a href="/contacts" class="btn btn-sm btn-secondary">Cancel</a>
+</div>
+{% endif %}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Contact ID</th>
+            <th>Company ID</th>
+            <th>Contact Name</th>
+            <th>Title</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>LinkedIn URL</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for contact in contacts %}
+        <tr>
+            <td>{{ contact.contact_id }}</td>
+            <td>{{ contact.company_id }}</td>
+            <td>{{ contact.contact_name }}</td>
+            <td>{{ contact.title }}</td>
+            <td>{{ contact.email }}</td>
+            <td>{{ contact.phone }}</td>
+            <td>{{ contact.linkedin_url }}</td>
+            <td>{{ contact.notes }}</td>
+            <td>
+                <!-- Edit and Delete buttons -->
+                <a href="/contacts/edit/{{ contact.contact_id }}" class="btn btn-sm btn-warning">Edit</a>
+                
+                <form method="GET" action="/contacts/delete/{{ contact.contact_id }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

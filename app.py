@@ -294,7 +294,7 @@ def edit_job(job_id):
         db.disconnect()
 
         flash("Job edited successfully!")
-        return redirect('/applications')
+        return redirect('/jobs')
     
     cursor=db.connection.cursor(dictionary=True)
     cursor.execute("SELECT * FROM jobs WHERE job_id = %s", (job_id,))
@@ -343,6 +343,106 @@ def delete_job(job_id):
         'jobs.html',
         jobs=jobs,
         deleting_job=deleting_job,
+        message=message
+    )
+
+@app.route('/contacts', methods=['GET','POST'])
+def contacts():
+    message = ""
+    db = JobTrackerDB()
+    db.connect()
+
+    if request.method == 'POST':
+        company_id = request.form['company_id']
+        contact_name = request.form['contact_name']
+        title = request.form['title']
+        email = request.form['email']
+        phone = request.form['phone']
+        linkedin_url = request.form['linkedin_url']
+        notes = request.form['notes']
+
+        try:
+            db.insert_contact(contact_name, title, email, phone, linkedin_url, notes, company_id)
+            message = "Contact successfully added to database."
+            #To fix resubmission problem
+            flash("Contact added successfully!")
+            return redirect('/contacts')
+        except:
+            message = "Unable to add contact to database."
+
+    contacts = db.get_all_contacts()
+    companies = db.get_all_companies()
+    db.disconnect()
+
+    return render_template('contacts.html', contacts=contacts, companies=companies, message=message)
+
+@app.route('/contacts/edit/<int:contact_id>', methods=['GET','POST'])
+def edit_contact(contact_id):
+    message = ""
+    db = JobTrackerDB()
+    db.connect()
+
+    if request.method == 'POST':
+        contact_name = request.form['contact_name']
+        title = request.form['title']
+        email = request.form['email']
+        phone = request.form['phone']
+        linkedin_url = request.form['linkedin_url']
+        notes = request.form['notes']
+
+        db.edit_contact(contact_name, title, email, phone, linkedin_url, notes, contact_id)
+        db.disconnect()
+
+        flash("Contact edited successfully!")
+        return redirect('/contacts')
+    
+    cursor=db.connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM contacts WHERE contact_id = %s", (contact_id,))
+    contact = cursor.fetchone()
+    contacts = db.get_all_contacts()
+    companies = db.get_all_companies()
+
+    db.disconnect()
+
+    return render_template(
+        'contacts.html',
+        contacts=contacts,
+        companies=companies,
+        editing_contact=contact
+    )
+
+@app.route('/contacts/delete/<int:contact_id>', methods=['GET','POST'])
+def delete_contact(contact_id):
+    db = JobTrackerDB()
+    db.connect()
+    message = ""
+
+    try:
+        if request.method == 'POST':
+            db.delete_contact(contact_id)
+            flash("Contact deleted successfully!")
+            return redirect('/contacts')
+
+        contacts = db.get_all_contacts()
+
+        deleting_contact = None
+        if request.method == 'GET':
+            cursor = db.connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM contacts WHERE contact_id = %s", (contact_id,))
+            deleting_contact = cursor.fetchone()
+
+    except Exception as e:
+        message = f"Error: {e}"
+        contacts = []
+        deleting_contact = None
+
+    finally:
+        db.disconnect()
+
+    return render_template(
+        'contacts.html',
+        contacts=contacts,
+        deleting_contact=deleting_contact,
         message=message
     )
 if __name__ == '__main__':

@@ -5,11 +5,14 @@
 <!--Add and edit application form-->
 <form method="POST" class="card p-4"
     action="{% if editing_application %}/applications/edit/{{ editing_application.application_id }}{% else %}/applications{% endif %}">
-    <div class="mb-3">
-        <label class="form-label">Job ID</label>
-        <input type="text" name="job_id" class="form-control" required
-        value="{{ editing_application.job_id if editing_application }}">
-    </div>
+    <label class="form-label">Job ID</label>
+        <select name="job_id">
+        {% for job in jobs %}
+            <option value="{{job.job_id}}">
+                {{job.job_id}}
+            </option>
+        {% endfor %}
+        </select>
     <div class="mb-3">
         <label class="form-label">Application Date</label>
         <input type="date" name="application_date" class="form-control" required
