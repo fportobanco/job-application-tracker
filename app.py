@@ -12,9 +12,27 @@ def dashboard():
     db.connect()
     cursor = db.connection.cursor(dictionary=True)
     cursor.execute('SELECT COUNT(*) as count FROM companies')
-    stats = cursor.fetchone()
+    company_stats = cursor.fetchone()
+
+    cursor.execute('SELECT COUNT(*) as count FROM applications')
+    applications_stats = cursor.fetchone()
+
+    cursor.execute('SELECT COUNT(*) as count FROM jobs')
+    jobs_stats = cursor.fetchone()
+
+    cursor.execute('SELECT COUNT(*) as count FROM contacts')
+    contacts_stats = cursor.fetchone()
+
+    stats = {
+        "companies": company_stats['count'],
+        "applications": applications_stats['count'],
+        "jobs": jobs_stats['count'],
+        "contacts": contacts_stats['count']
+    }
+    
+    application_stats = db.application_statuses()
     db.disconnect()
-    return render_template('dashboard.html', stats=stats)
+    return render_template('dashboard.html', stats=stats, application_stats=application_stats)
 
 @app.route('/companies', methods=['GET','POST'])
 def companies():
@@ -23,12 +41,16 @@ def companies():
     db.connect()
 
     if request.method == 'POST':
-        company_name = request.form['company_name']
-        industry = request.form['industry']
-        website = request.form['website']
-        city = request.form['city']
-        state = request.form['state']
-        notes = request.form['notes']
+        company_name = request.form['company_name'].strip()
+        industry = request.form['industry'].strip()
+        website = request.form['website'].strip()
+        city = request.form['city'].strip()
+        state = request.form['state'].strip()
+        notes = request.form['notes'].strip()
+
+        if not company_name:
+            flash("Please include a company name.")
+            return redirect('/companies')
 
         try:
             db.insert_company(company_name, industry, website, city, state, notes)
@@ -46,18 +68,21 @@ def companies():
 
 @app.route('/companies/edit/<int:company_id>', methods=['GET','POST'])
 def edit_company(company_id):
-    message = ""
     db = JobTrackerDB()
     db.connect()
 
     if request.method == 'POST':
-        company_name = request.form['company_name']
-        industry = request.form['industry']
-        website = request.form['website']
-        city = request.form['city']
-        state = request.form['state']
-        notes = request.form['notes']
+        company_name = request.form['company_name'].strip()
+        industry = request.form['industry'].strip()
+        website = request.form['website'].strip()
+        city = request.form['city'].strip()
+        state = request.form['state'].strip()
+        notes = request.form['notes'].strip()
 
+        if not company_name:
+            flash("Please include a company name.")
+            return redirect('/companies')
+        
         db.edit_company(company_name, industry, website, city, state, notes, company_id)
         db.disconnect()
 
@@ -120,7 +145,8 @@ def applications():
     if request.method == 'POST':
         application_date = request.form['application_date']
         status = request.form['status']
-        resume_version = request.form['resume_version']
+        resume_version = request.form['resume_version'].strip()
+        interview_data = request.form['interview_data'].strip()
 
         if 'cover_letter_sent' in request.form:
             cover_letter_sent = 1;
@@ -128,6 +154,10 @@ def applications():
             cover_letter_sent = 0
 
         job_id = request.form['job_id']
+
+        if not application_date:
+            flash("Please include an application date")
+            return redirect('/applications')
 
         try:
             interview_data = json.loads(request.form['interview_data'])
@@ -153,20 +183,25 @@ def applications():
 
 @app.route('/applications/edit/<int:application_id>', methods=['GET','POST'])
 def edit_application(application_id):
-    message = ""
     db = JobTrackerDB()
     db.connect()
 
     if request.method == 'POST':
+        job_id = request.form['job_id']
         application_date = request.form['application_date']
         status = request.form['status']
-        resume_version = request.form['resume_version']
-
+        resume_version = request.form['resume_version'].strip()
+        interview_data = request.form['interview_data'].strip()
+        
         if 'cover_letter_sent' in request.form:
             cover_letter_sent = 1;
         else:
             cover_letter_sent = 0
 
+        if not application_date:
+            flash("Please include an application date.")
+            return redirect('/applications')
+        
         try:
             interview_data = json.loads(request.form['interview_data'])
             interview_data = json.dumps(interview_data)
@@ -174,7 +209,7 @@ def edit_application(application_id):
             flash("Interview Data is not JSON.")
             return redirect('/applications')
 
-        db.edit_application(application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
+        db.edit_application(job_id, application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
         db.disconnect()
 
         flash("Application edited successfully!")
@@ -237,15 +272,26 @@ def jobs():
     db.connect()
 
     if request.method == 'POST':
-        date_posted = request.form['date_posted']
-        job_title = request.form['job_title']
+        date_posted = request.form['date_posted'].strip()
+        job_title = request.form['job_title'].strip()
         job_type = request.form['job_type']
-        salary_min = request.form['salary_min']
-        salary_max = request.form['salary_max']
-        job_url = request.form['job_url']
-        requirements = request.form['requirements']
+        salary_min = request.form.get('salary_min', '').strip()
+        salary_max = request.form.get('salary_max', '').strip()
+        job_url = request.form['job_url'].strip()
+        requirements = request.form['requirements'].strip()
         company_id = request.form['company_id']
 
+        salary_min = int(salary_min) if salary_min else None
+        salary_max = int(salary_max) if salary_max else None
+
+        if not job_title:
+            flash("Please include a job title.")
+            return redirect('/jobs')
+        
+        if salary_min and salary_max and salary_min > salary_max:
+            flash("Please enter a Salary Min that is less than Salary Max.")
+            return redirect('/jobs')
+        
         try:
             requirements = json.loads(request.form['requirements'])
             requirements = json.dumps(requirements)
@@ -270,19 +316,30 @@ def jobs():
 
 @app.route('/jobs/edit/<int:job_id>', methods=['GET','POST'])
 def edit_job(job_id):
-    message = ""
     db = JobTrackerDB()
     db.connect()
 
     if request.method == 'POST':
-        date_posted = request.form['date_posted']
-        job_title = request.form['job_title']
+        company_id = request.form['company_id']
+        date_posted = request.form['date_posted'].strip()
+        job_title = request.form['job_title'].strip()
         job_type = request.form['job_type']
-        salary_min = request.form['salary_min']
-        salary_max = request.form['salary_max']
-        job_url = request.form['job_url']
-        requirements = request.form['requirements']
+        salary_min = request.form.get('salary_min', '').strip()
+        salary_max = request.form.get('salary_max', '').strip()
+        job_url = request.form['job_url'].strip()
+        requirements = request.form['requirements'].strip()
 
+        salary_min = int(salary_min) if salary_min else None
+        salary_max = int(salary_max) if salary_max else None
+
+        if not job_title:
+            flash("Please include a job title.")
+            return redirect('/jobs')
+        
+        if salary_min and salary_max and salary_min > salary_max:
+            flash("Please enter a Salary Min that is less than Salary Max.")
+            return redirect('/jobs')
+        
         try:
             requirements = json.loads(request.form['requirements'])
             requirements = json.dumps(requirements)
@@ -290,7 +347,7 @@ def edit_job(job_id):
             flash("Requirements Data is not JSON.")
             return redirect('/jobs')
 
-        db.edit_job(date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
+        db.edit_job(company_id, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
         db.disconnect()
 
         flash("Job edited successfully!")
@@ -354,12 +411,28 @@ def contacts():
 
     if request.method == 'POST':
         company_id = request.form['company_id']
-        contact_name = request.form['contact_name']
-        title = request.form['title']
-        email = request.form['email']
-        phone = request.form['phone']
-        linkedin_url = request.form['linkedin_url']
-        notes = request.form['notes']
+        contact_name = request.form['contact_name'].strip()
+        title = request.form['title'].strip()
+        email = request.form['email'].strip()
+        phone = request.form['phone'].strip()
+        linkedin_url = request.form['linkedin_url'].strip()
+        notes = request.form['notes'].strip()
+
+        if not contact_name:
+            flash("Please include a contact name.")
+            return redirect('/contacts')
+        
+        if email and '@' not in email:
+            flash("Please include a valid email format.")
+            return redirect('/contacts')
+        
+        if phone and not phone.replace('-', '').isdigit():
+            flash("Please enter a phone number with only dashes or numbers.")
+            return redirect('/contacts')
+        
+        if linkedin_url and 'linkedin' not in linkedin_url:
+            flash("Please include a LinkedIn URL.")
+            return redirect('/contacts')
 
         try:
             db.insert_contact(contact_name, title, email, phone, linkedin_url, notes, company_id)
@@ -378,19 +451,35 @@ def contacts():
 
 @app.route('/contacts/edit/<int:contact_id>', methods=['GET','POST'])
 def edit_contact(contact_id):
-    message = ""
     db = JobTrackerDB()
     db.connect()
 
     if request.method == 'POST':
-        contact_name = request.form['contact_name']
-        title = request.form['title']
-        email = request.form['email']
-        phone = request.form['phone']
-        linkedin_url = request.form['linkedin_url']
-        notes = request.form['notes']
+        company_id = request.form['company_id']
+        contact_name = request.form['contact_name'].strip()
+        title = request.form['title'].strip()
+        email = request.form['email'].strip()
+        phone = request.form['phone'].strip()
+        linkedin_url = request.form['linkedin_url'].strip()
+        notes = request.form['notes'].strip()
 
-        db.edit_contact(contact_name, title, email, phone, linkedin_url, notes, contact_id)
+        if not contact_name:
+            flash("Please include a contact name.")
+            return redirect('/contacts')
+        
+        if email and '@' not in email:
+            flash("Please include a valid email format.")
+            return redirect('/contacts')
+        
+        if phone and not phone.replace('-', '').isdigit():
+            flash("Please enter a phone number with only dashes or numbers.")
+            return redirect('/contacts')
+        
+        if linkedin_url and 'linkedin' not in linkedin_url:
+            flash("Please include a LinkedIn URL.")
+            return redirect('/contacts')
+
+        db.edit_contact(company_id, contact_name, title, email, phone, linkedin_url, notes, contact_id)
         db.disconnect()
 
         flash("Contact edited successfully!")
@@ -445,5 +534,37 @@ def delete_contact(contact_id):
         deleting_contact=deleting_contact,
         message=message
     )
+
+@app.route('/job_match', methods=['GET', 'POST'])
+def job_match():
+    results = []
+    user_skills = []
+
+    if request.method == 'POST':
+        skills_input = request.form.get('skills')
+        user_skills = [s.strip().lower() for s in skills_input.split(',')]
+
+        db = JobTrackerDB()
+        db.connect()
+        jobs = db.get_all_jobs()
+        db.disconnect()
+
+        for job in jobs:
+            job_skills = [s.lower() for s in json.loads(job['requirements'] or "[]")]
+            matched = set(user_skills) & set(job_skills)
+            missing = set(job_skills) - set(user_skills)
+            match_pct = int(len(matched) / len(job_skills) * 100) if job_skills else 0
+
+            results.append({
+                'job_title': job['job_title'],
+                'company_id': job['company_id'],
+                'match_percentage': match_pct,
+                'missing_skills': list(missing)
+            })
+
+        # Sort highest match first
+        results.sort(key=lambda x: x['match_percentage'], reverse=True)
+
+    return render_template('job_match.html', results=results, user_skills=user_skills)
 if __name__ == '__main__':
     app.run(debug=True)

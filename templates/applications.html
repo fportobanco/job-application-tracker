@@ -8,7 +8,8 @@
     <label class="form-label">Job ID</label>
         <select name="job_id">
         {% for job in jobs %}
-            <option value="{{job.job_id}}">
+            <option value="{{job.job_id}}"
+                {% if editing_application and editing_application.job_id == job.job_id %}selected{% endif %}>
                 {{job.job_id}}
             </option>
         {% endfor %}

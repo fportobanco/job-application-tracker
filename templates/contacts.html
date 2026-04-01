@@ -8,8 +8,9 @@
     <label class="form-label">Company ID</label>
         <select name="company_id">
         {% for company in companies %}
-            <option value="{{company.company_id}}">
-                {{company.company_id}}
+            <option value="{{ company.company_id }}"
+                {% if editing_contact and editing_contact.company_id == company.company_id %}selected{% endif %}>
+                {{ company.company_id }}
             </option>
         {% endfor %}
         </select>
@@ -22,25 +23,25 @@
 
     <div class="mb-3">
         <label class="form-label">Title</label>
-        <input type="text" name="title" class="form-control" required
+        <input type="text" name="title" class="form-control"
         value="{{ editing_contact.title if editing_contact }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Email</label>
-        <input type="text" name="email" class="form-control" required
+        <input type="text" name="email" class="form-control"
         value="{{ editing_contact.email if editing_contact }}">
     </div>
     
     <div class="mb-3">
         <label class="form-label">Phone</label>
-        <input type="text" name="phone" class="form-control" required
+        <input type="text" name="phone" class="form-control"
         value="{{ editing_contact.phone if editing_contact }}">
     </div>
 
     <div class="mb-3">
         <label class="form-label">LinkedIn URL</label>
-        <input type="text" name="linkedin_url" class="form-control" required
+        <input type="text" name="linkedin_url" class="form-control"
         value="{{ editing_contact.linkedin_url if editing_contact }}">
     </div>
     

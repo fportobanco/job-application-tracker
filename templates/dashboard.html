@@ -5,7 +5,20 @@
 
 <div class="card">
     <div class="card-body">
-        Total Companies: {{stats.count}}
+        <h2>Number of Table Records</h2>
+        <h6>Total Companies: {{stats.companies}}</h6>
+        <h6>Total Applications: {{stats.applications}}</h6>
+        <h6>Total Jobs: {{stats.jobs}}</h6>
+        <h6>Total Contacts: {{stats.contacts}}</h6>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2>Application Statuses</h2>
+        {% for row in application_stats %}
+            <h6>{{ row.status }}: {{ row.count }}</h6>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

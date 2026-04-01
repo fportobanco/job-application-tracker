@@ -95,14 +95,14 @@ class JobTrackerDB:
         print(f'Application added successfully!')
         print(f'New application ID: {cursor.lastrowid}')    
     
-    def edit_application(self, application_date, status, resume_version, cover_letter_sent, interview_data, application_id):
+    def edit_application(self, job_id, application_date, status, resume_version, cover_letter_sent, interview_data, application_id):
         cursor = self.connection.cursor(dictionary=True)
         edit_query = '''
             UPDATE applications 
-            SET application_date = %s, status = %s, resume_version = %s, cover_letter_sent = %s, interview_data = %s
+            SET job_id = %s, application_date = %s, status = %s, resume_version = %s, cover_letter_sent = %s, interview_data = %s
             WHERE application_id = %s
         '''
-        values = (application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
+        values = (job_id, application_date, status, resume_version, cover_letter_sent, interview_data, application_id)
         cursor.execute(edit_query, values)
         self.connection.commit()
         print(f'Application edited successfully!')
@@ -129,14 +129,14 @@ class JobTrackerDB:
         print(f'Job added successfully!')
         print(f'New job ID: {cursor.lastrowid}')    
     
-    def edit_job(self, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id):
+    def edit_job(self, company_id, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id):
         cursor = self.connection.cursor(dictionary=True)
         edit_query = '''
             UPDATE jobs 
-            SET date_posted = %s, job_title = %s, job_type = %s, salary_min = %s, salary_max = %s, job_url = %s, requirements = %s
+            SET company_id = %s, date_posted = %s, job_title = %s, job_type = %s, salary_min = %s, salary_max = %s, job_url = %s, requirements = %s
             WHERE job_id = %s
         '''
-        values = (date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
+        values = (company_id, date_posted, job_title, job_type, salary_min, salary_max, job_url, requirements, job_id)
         cursor.execute(edit_query, values)
         self.connection.commit()
         print(f'Job edited successfully!')
@@ -163,14 +163,14 @@ class JobTrackerDB:
         print(f'Contact added successfully!')
         print(f'New contact ID: {cursor.lastrowid}') 
 
-    def edit_contact(self, contact_name, title, email, phone, linkedin_url, notes, contact_id):
+    def edit_contact(self, company_id, contact_name, title, email, phone, linkedin_url, notes, contact_id):
         cursor = self.connection.cursor(dictionary=True)
         edit_query = '''
             UPDATE contacts 
-            SET contact_name = %s, title = %s, email = %s, phone = %s, linkedin_url = %s, notes = %s
+            SET company_id = %s, contact_name = %s, title = %s, email = %s, phone = %s, linkedin_url = %s, notes = %s
             WHERE contact_id = %s
         '''
-        values = (contact_name, title, email, phone, linkedin_url, notes, contact_id)
+        values = (company_id, contact_name, title, email, phone, linkedin_url, notes, contact_id)
         cursor.execute(edit_query, values)
         self.connection.commit()
         print(f'Contact edited successfully!')
@@ -184,3 +184,14 @@ class JobTrackerDB:
         cursor.execute(delete_query, (contact_id,))
         self.connection.commit()
         print(f'Contact deleted successfully!')
+
+    def application_statuses(self):
+        cursor = self.connection.cursor(dictionary=True)
+        display_query = '''
+            SELECT status, COUNT(*) as count
+            FROM applications
+            GROUP BY status
+        
+        '''
+        cursor.execute(display_query)
+        return cursor.fetchall()

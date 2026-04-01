@@ -8,8 +8,9 @@
     <label class="form-label">Company ID</label>
         <select name="company_id">
         {% for company in companies %}
-            <option value="{{company.company_id}}">
-                {{company.company_id}}
+            <option value="{{ company.company_id }}"
+                {% if editing_job and editing_job.company_id == company.company_id %}selected{% endif %}>
+                {{ company.company_id }}
             </option>
         {% endfor %}
         </select>
@@ -21,7 +22,7 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Status</label>
+        <label class="form-label">Job Type</label>
         <select name="job_type" class="form-control">
             <option value="Full-time">Full-time</option>
             <option value="Part-time">Part-time</option>
@@ -50,7 +51,7 @@
 
     <div class="mb-3">
         <label class="form-label">Date Posted</label>
-        <input type="date" name="date_posted" class="form-control" required
+        <input type="date" name="date_posted" class="form-control"
         value="{{ editing_job.date_posted if editing_job }}">
     </div>
 
